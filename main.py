@@ -1,19 +1,26 @@
+#Мой интерпретатор - Python 3.10.0('venv':venv)
+#Все импортируемые библиотеки находятся у меня в виртуальной среде, созданной в этом проекте в папке venv
+#На GitHub я ее не закоммитил, потому что много весит и долго коммитится
 import flet
 import flet_material as fm
+#Это стандартная библиотека
 import webbrowser
 
 
-
+#Главный класс приложения
 class App(flet.UserControl):
+    #Эта функция вроде бы помогает наследованию для этого класса от другого класса flet.UserControl, но в этом я не уверен, по крайней мере так читал на StackOverflow
     def __init__(self):
         super().__init__()
     
     def MainContainer(self):
+        #Контейнер со страницей
         self.viewContainer = flet.Container(
             expand=True,
             content=SettingsView()
         )
 
+        #Контейнер строки с иконками переключения страниц
         self.iconRow =flet.Row(
             alignment="center",
             controls=[
@@ -38,6 +45,7 @@ class App(flet.UserControl):
             ]
         )
 
+        #Главный контейнер, содержащий в себе нижнюю строку с иконками переключения страниц и второй контейнер с просмотром выбранной страницы
         self.mainContainer = flet.Container(
             expand=True,
             content=flet.Column(
@@ -50,6 +58,7 @@ class App(flet.UserControl):
         )
         return self.mainContainer
     
+    #Функция изменения цвета иконки страницы при нажатии на иконку, чтобы было понятно какая страница выбрана
     def SelectIcon(self, e):
         for button in self.iconRow.controls[:]:
             button.selected = False
@@ -58,6 +67,7 @@ class App(flet.UserControl):
                 e.control.selected = True
                 e.control.update()
 
+    #Функция построения и отрисовки всего приложения (Главного контейнера)
     def build(self):
         return flet.Column(
             expand=True,
@@ -69,7 +79,7 @@ class App(flet.UserControl):
         )
 
 
-
+#Класс страницы биржи (пока что не затрагиваю)
 class ChartsView(flet.UserControl):
     def __init__(self):
         super().__init__()
@@ -102,7 +112,7 @@ class ChartsView(flet.UserControl):
         )
 
 
-
+#Класс страницы с уведомлениями (пока что не затрагиваю)
 class NotificationsView(flet.UserControl):
     def __init__(self):
         super().__init__()
@@ -126,11 +136,12 @@ class NotificationsView(flet.UserControl):
         )
 
 
-
+#Класс страницы с настройками приложения и информации о приложении
 class SettingsView(flet.UserControl):
     def __init__(self):
         super().__init__()
 
+    #Функции открытия ссылок на мои контакты на странице настроек
     def TelegramButton(e):
         webbrowser.open("https://t.me/melcxre")
 
@@ -140,15 +151,9 @@ class SettingsView(flet.UserControl):
     def GitHubButton(e):
         webbrowser.open("https://github.com/melcxre/Stonks")
 
-    #def ThemeSwitch(e):
-    #    theme_switch = (
-    #        flet.ThemeMode.DARK
-    #        if flet.Page.theme_mode == flet.ThemeMode.LIGHT
-    #        else flet.ThemeMode.LIGHT
-    #    )
-    #    return theme_switch
-
+    #Страница настроек и информации о приложении
     def SettingsContainer(self):
+        #Контейнер с описанием приложения и контактами
         self.appAbout = flet.Container(
             expand=True,
             content=flet.Column(
@@ -218,6 +223,7 @@ class SettingsView(flet.UserControl):
                 ]
             )
         )
+        #Контейнер с настройками
         self.appSettings = flet.Container(
             expand=True,
             content=flet.Column(
@@ -230,14 +236,23 @@ class SettingsView(flet.UserControl):
                                 "Тема",
                                 style=flet.TextThemeStyle.BODY_LARGE
                             ),
+                            #Этот свитчер должен вызывать функцию ThemeSwitch() из главной main(page: flet.Page) функции, чтобы менять тему всего приложения
+                            #Но я не понимаю как передать выполнение этой функции в этот класс при переключении свитчера
+                            #Саму фишку я взял с официальной документации Flet, но проблема в том что у них и функция переключения темы находится в главной функции main,
+                            #И свитчер добавляется в той же функции main через page.add()
+                            #Но в моем случае свитчер находится в классе страницы настроек, которая потом отрисовывается в главном классе приложения
+                            #Поэтому я не понимаю как мне вызвать эту функцию здесь, ведь добавлять свитчер на главную через page.add() сломает весь смысл того что я пишу все через классы
+                            #И свитчер по сути будет не на странице настроек а вообще в самом приложении на постоянке висеть где-то, так мне кажется не красиво
+                            #Пока что в ООП я особо не разбираюсь
                             flet.Switch(
-                                #on_change=self.ThemeSwitch()
+                                #on_change=main().ThemeSwitch()
                             )
                         ]
                     )
                 ]
             )
         )
+        #Сама страница настроек на которую добавляется и описание приложения и настройки приложения
         self.settingsContainer = flet.Container(
             expand=True,
             bgcolor=flet.colors.with_opacity(0.025, flet.colors.WHITE10),
@@ -252,6 +267,7 @@ class SettingsView(flet.UserControl):
         )
         return self.settingsContainer
 
+    #Сборка и отрисовка страницы настроек
     def build(self):
         return flet.Column(
             expand=True,
@@ -263,14 +279,27 @@ class SettingsView(flet.UserControl):
         )
 
 
-
+#Главная функция
 def main(page: flet.Page):
     page.title = "Stonks"
     page.window_min_height = 700
     page.window_min_width = 300
-    page.theme_mode = flet.ThemeMode.DARK
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
+
+
+    #Та самая функция переключения темы приложения
+    def ThemeSwitch(e):
+        page.theme_mode = (
+            flet.ThemeMode.DARK
+            if page.theme_mode == flet.ThemeMode.LIGHT
+            else flet.ThemeMode.LIGHT
+        )
+        page.update()
+    page.theme_mode = flet.ThemeMode.DARK
+
+
+
     page.add(App().build())
     page.update()
 
